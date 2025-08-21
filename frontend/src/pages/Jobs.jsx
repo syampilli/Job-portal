@@ -1,29 +1,31 @@
 import { useAuth } from "../context/AuthContext";  
 import axios from "../api/axios"; 
 import { useState, useEffect } from "react";
+import JobCard from "../components/JobCard";
 
 const Jobs = () => {
   const { token } = useAuth();   
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
+  const [appliedJobs, setAppliedJobs] = useState([]); // ✅ track applied job IDs
 
-  // ✅ Fetch jobs (even if user is not logged in)
+  // ✅ Fetch jobs
+  const fetchJobs = async () => {
+    try {
+      const res = await axios.get("/jobs");
+      setJobs(res.data.jobs || []);
+    } catch (err) {
+      console.error("Error fetching jobs:", err.response?.data || err.message);
+      setError("Failed to load jobs.");
+    }
+  };
+
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res = await axios.get("/jobs"); // ✅ correct endpoint
-        setJobs(res.data.jobs || []); // ✅ get the array
-      } catch (err) {
-        console.error("Error fetching jobs:", err.response?.data || err.message);
-        setError("Failed to load jobs.");
-      }
-    };
-
     fetchJobs();
   }, []);
 
   // ✅ Apply handler
-  const handleApply = async (jobId) => {
+  const handleApply = async (jobId, coverLetter) => {
     if (!token) {
       alert("You must be logged in to apply.");
       return;
@@ -31,13 +33,29 @@ const Jobs = () => {
 
     try {
       const res = await axios.post(
-        `/jobs/${jobId}/apply`,   // ✅ correct endpoint
-        { coverLetter: "This is my cover letter." }, // send data
+        `/jobs/${jobId}/apply`,
+        { coverLetter },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       alert(res.data.message || "Applied successfully!");
+      setAppliedJobs((prev) => [...prev, jobId]);
+
+      // ✅ Fetch the updated job and replace in state
+      const updatedJob = await axios.get(`/jobs/${jobId}`);
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job._id === jobId ? updatedJob.data : job
+        )
+      );
+
     } catch (err) {
       console.error("Apply error:", err.response?.data || err.message);
+
+      if (err.response?.data?.message?.includes("already applied")) {
+        setAppliedJobs((prev) => [...prev, jobId]);
+      }
+
       alert(err.response?.data?.message || "Failed to apply");
     }
   };
@@ -53,27 +71,13 @@ const Jobs = () => {
       ) : (
         <ul>
           {jobs.map((job) => (
-            <li
+            <JobCard
               key={job._id}
-              className="border border-gray-700 p-4 rounded-lg mb-3 bg-gray-800"
-            >
-              <h3 className="font-semibold text-cyan-300">{job.title}</h3>
-              <p className="text-gray-300">{job.description}</p>
-              <p className="text-sm text-gray-400">📍 {job.location}</p>
-              <p className="text-sm text-gray-400">💰 ₹{job.budget}</p>
-
-              <button
-                onClick={() => handleApply(job._id)}
-                disabled={!token}
-                className={`mt-3 px-4 py-2 rounded ${
-                  token
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-gray-600 cursor-not-allowed"
-                }`}
-              >
-                {token ? "Apply" : "Login to Apply"}
-              </button>
-            </li>
+              job={job}
+              onApply={handleApply}
+              applied={appliedJobs.includes(job._id)}
+              disabled={!token}
+            />
           ))}
         </ul>
       )}

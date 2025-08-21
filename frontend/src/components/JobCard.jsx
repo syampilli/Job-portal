@@ -1,11 +1,13 @@
 import { useState } from "react";
 
-const JobCard = ({ job, onApply }) => {
+const JobCard = ({ job, onApply, applied, disabled }) => {
   const [showApply, setShowApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
 
   const handleApplyClick = () => {
-    setShowApply(!showApply);
+    if (!applied) {
+      setShowApply(!showApply);
+    }
   };
 
   const handleSubmit = () => {
@@ -20,24 +22,33 @@ const JobCard = ({ job, onApply }) => {
     <div className="p-4 bg-gray-800 text-white rounded-xl shadow-lg mb-4">
       <h2 className="text-xl font-bold">{job.title}</h2>
       <p className="text-sm">{job.description}</p>
-      <p className="text-sm mt-1">
-        <strong>Skills:</strong> {job.skills.join(", ")}
-      </p>
-      <p className="text-sm mt-1">
-        <strong>Budget:</strong> ${job.budget || "N/A"}
-      </p>
-      <p className="text-sm mt-1">
-        <strong>Location:</strong> {job.location || "Remote"}
-      </p>
+      <p className="text-sm mt-1"><strong>Skills:</strong> {job.skills.join(", ")}</p>
+      <p className="text-sm mt-1"><strong>Budget:</strong> ${job.budget || "N/A"}</p>
+      <p className="text-sm mt-1"><strong>Location:</strong> {job.location || "Remote"}</p>
 
+      {/* Apply Button */}
       <button
         onClick={handleApplyClick}
-        className="mt-3 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
+        disabled={applied || disabled}
+        className={`mt-3 px-4 py-2 rounded-lg ${
+          applied
+            ? "bg-gray-600 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
+        }`}
       >
-        {showApply ? "Cancel" : "Apply"}
+        {applied ? "Already Applied" : "Apply"}
       </button>
 
-      {showApply && (
+      {/* Applications Count Button */}
+      <button
+        disabled
+        className="mt-3 ml-3 px-4 py-2 bg-purple-600 rounded-lg cursor-default"
+      >
+        👥 {job.applications?.length || 0} Applied
+      </button>
+
+      {/* Cover Letter Form */}
+      {showApply && !applied && (
         <div className="mt-3">
           <textarea
             value={coverLetter}
