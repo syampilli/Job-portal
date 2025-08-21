@@ -7,7 +7,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold mb-4 text-cyan-400">RizeOS Job Portal</h1>
+      <h1 className="text-4xl font-bold mb-4 text-cyan-400">OUR POD PORTAL</h1>
       <p className="text-gray-300 mb-6 text-center max-w-md">
         A decentralized job & networking platform for developers, by developers.
       </p>

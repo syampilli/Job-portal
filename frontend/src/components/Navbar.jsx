@@ -12,9 +12,10 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-900 text-white flex items-center justify-between px-6 py-3 shadow-md">
-      <Link to="/" className="text-xl font-bold text-cyan-400">RizeOS</Link>
+      <Link to="/" className="text-xl font-bold text-cyan-400">OURPOD</Link>
 
       <div className="flex gap-4 items-center">
+        <Link to="/" className="hover:text-cyan-300">Home</Link>
         <Link to="/jobs" className="hover:text-cyan-300">Jobs</Link>
         {user && <Link to="/post-job" className="hover:text-cyan-300">Post Job</Link>}
         {user && <Link to="/profile" className="hover:text-cyan-300">Profile</Link>}
